@@ -1,0 +1,577 @@
+<title>NightLedger</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700;9..144,900&family=Work+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  :root{
+    --ink:#16213e;
+    --paper:#faf6ed;
+    --paper-2:#f1ebdb;
+    --accent:#b8420f;
+    --accent-ink:#ffffff;
+    --ok:#2f6f4e;
+    --line:#dad2bc;
+    --muted:#6b6455;
+    --card:#ffffff;
+    --shadow: 0 1px 0 var(--line);
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ink:#ede7d9;
+      --paper:#12151c;
+      --paper-2:#181c25;
+      --accent:#e2712f;
+      --accent-ink:#141414;
+      --ok:#5cb589;
+      --line:#2b3140;
+      --muted:#9c9686;
+      --card:#191d27;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --ink:#ede7d9;
+    --paper:#12151c;
+    --paper-2:#181c25;
+    --accent:#e2712f;
+    --accent-ink:#141414;
+    --ok:#5cb589;
+    --line:#2b3140;
+    --muted:#9c9686;
+    --card:#191d27;
+    color-scheme: dark;
+  }
+
+  *{ box-sizing:border-box; }
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Work Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    padding-left:max(20px, env(safe-area-inset-left,0px));
+    padding-right:max(20px, env(safe-area-inset-right,0px));
+    line-height:1.5;
+  }
+  h1,h2,h3{ font-family:'Fraunces', Georgia, serif; font-weight:700; letter-spacing:-0.01em; text-wrap:balance; margin:0; }
+  .mono{ font-family:'IBM Plex Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+  a{ color:inherit; }
+  .wrap{ max-width:1040px; margin:0 auto; }
+  .rule{ border:none; border-top:1px solid var(--line); margin:0; }
+  section{ padding-block: 64px; }
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace; font-size:12px; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--accent); display:flex; align-items:center; gap:10px; margin-bottom:14px;
+  }
+  .eyebrow::before{ content:""; width:18px; height:1px; background:var(--accent); display:inline-block; }
+  .folio{
+    font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--muted); letter-spacing:.08em;
+  }
+  .tbd{
+    border-bottom:1px dashed var(--accent); color:var(--accent); cursor:default; white-space:nowrap;
+    font-family:'IBM Plex Mono', monospace; font-size:.92em;
+  }
+  .btn{
+    display:inline-flex; align-items:center; gap:8px; background:var(--accent); color:var(--accent-ink);
+    font-family:'IBM Plex Mono', monospace; font-size:13px; letter-spacing:.03em; text-transform:uppercase;
+    padding:13px 22px; border-radius:3px; text-decoration:none; border:1px solid var(--accent);
+  }
+  .btn.ghost{ background:transparent; color:var(--ink); border-color:var(--line); }
+  .btn:focus-visible, a:focus-visible, button:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+
+  /* header */
+  header.top{
+    position:sticky; top:env(safe-area-inset-top,0px); z-index:20;
+    background:color-mix(in srgb, var(--paper) 92%, transparent);
+    backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--line);
+  }
+  .topbar{ max-width:1040px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; padding:14px 0; gap:16px; }
+  .brand{ font-family:'Fraunces', serif; font-weight:700; font-size:19px; }
+  .brand span{ color:var(--accent); }
+  nav{ display:flex; gap:22px; font-family:'IBM Plex Mono', monospace; font-size:12.5px; }
+  nav a{ text-decoration:none; color:var(--muted); }
+  nav a:hover{ color:var(--ink); }
+  .navlinks{ display:flex; }
+  @media (max-width:680px){ .navlinks{ display:none; } }
+
+  /* hero */
+  .hero{ padding-top:56px; padding-bottom:20px; display:grid; gap:34px; }
+  .hero h1{ font-size:clamp(34px,5.4vw,58px); line-height:1.04; }
+  .hero .sub{ max-width:56ch; color:var(--muted); font-size:17px; margin-top:18px; }
+  .hero .ctas{ display:flex; flex-wrap:wrap; gap:12px; margin-top:26px; }
+
+  .bridge{
+    border:1px solid var(--line); border-radius:6px; background:var(--card); overflow:hidden;
+  }
+  .bridge-head{ padding:14px 18px; border-bottom:1px solid var(--line); font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); }
+  .clocks{ display:grid; grid-template-columns:1fr 1fr; }
+  .clocks > div{ padding:22px 18px; }
+  .clocks > div:first-child{ border-right:1px solid var(--line); }
+  .clock-loc{ font-size:12px; color:var(--muted); font-family:'IBM Plex Mono',monospace; letter-spacing:.05em; }
+  .clock-time{ font-family:'IBM Plex Mono',monospace; font-size:clamp(26px,4.6vw,36px); margin-top:6px; font-weight:500; }
+  .clock-date{ font-size:12px; color:var(--muted); margin-top:4px; }
+  .bridge-foot{ padding:14px 18px; border-top:1px solid var(--line); font-size:13.5px; color:var(--muted); background:var(--paper-2); }
+  .bridge-foot strong{ color:var(--ink); }
+
+  /* ledger table (services) */
+  .ledger{ border:1px solid var(--line); border-radius:6px; overflow:hidden; background:var(--card); }
+  .lrow{ display:grid; grid-template-columns: 34px 1fr auto; gap:18px; align-items:start; padding:20px 20px; }
+  .lrow + .lrow{ border-top:1px solid var(--line); }
+  .lrow .num{ font-family:'IBM Plex Mono',monospace; color:var(--accent); font-size:13px; padding-top:3px; }
+  .lrow h3{ font-size:19px; }
+  .lrow p{ margin:8px 0 0; color:var(--muted); font-size:14.5px; max-width:58ch; }
+  .lrow .tag{ font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--muted); align-self:start; padding-top:4px; text-align:right; white-space:nowrap; }
+  @media (max-width:640px){
+    .lrow{ grid-template-columns:1fr; }
+    .lrow .tag{ text-align:left; }
+  }
+
+  /* two-col intro rows */
+  .row2{ display:grid; grid-template-columns: 1fr 1.4fr; gap:44px; align-items:start; }
+  @media (max-width:760px){ .row2{ grid-template-columns:1fr; gap:22px; } }
+  .row2 h2{ font-size:clamp(26px,3.6vw,34px); }
+
+  /* industries */
+  .cards3{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+  @media (max-width:760px){ .cards3{ grid-template-columns:1fr; } }
+  .card{ border:1px solid var(--line); border-radius:6px; padding:22px; background:var(--card); display:flex; flex-direction:column; gap:12px; }
+  .card .icon{ width:30px; height:30px; }
+  .card h3{ font-size:18px; }
+  .card ul{ margin:0; padding-left:18px; color:var(--muted); font-size:13.5px; display:flex; flex-direction:column; gap:6px; }
+
+  /* process steps */
+  .steps{ display:grid; gap:0; border:1px solid var(--line); border-radius:6px; overflow:hidden; background:var(--card); }
+  .step{ display:grid; grid-template-columns:52px 1fr; gap:16px; padding:20px; }
+  .step + .step{ border-top:1px solid var(--line); }
+  .step .n{ font-family:'Fraunces',serif; font-weight:700; font-size:22px; color:var(--accent); }
+  .step h3{ font-size:16.5px; }
+  .step p{ margin:6px 0 0; color:var(--muted); font-size:14px; max-width:60ch; }
+
+  /* tools */
+  .tools{ display:flex; flex-wrap:wrap; gap:10px; }
+  .tool{ border:1px solid var(--line); border-radius:4px; padding:9px 14px; font-family:'IBM Plex Mono',monospace; font-size:12.5px; background:var(--card); display:flex; align-items:center; gap:8px; }
+  .dot{ width:6px; height:6px; border-radius:50%; background:var(--ok); flex:none; }
+  .dot.pending{ background:var(--muted); }
+  .toolnote{ font-size:12px; color:var(--muted); margin-top:10px; }
+
+  /* pricing */
+  .cards-price{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+  @media (max-width:820px){ .cards-price{ grid-template-columns:1fr; } }
+  .price-card{ border:1px solid var(--line); border-radius:6px; padding:24px; background:var(--card); display:flex; flex-direction:column; gap:14px; }
+  .price-card.feat{ border-color:var(--accent); position:relative; }
+  .price-card .plan{ font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
+  .price-card .amt{ font-family:'Fraunces',serif; font-weight:700; font-size:34px; }
+  .price-card .amt sub{ font-family:'Work Sans',sans-serif; font-size:13px; color:var(--muted); }
+  .price-card ul{ margin:0; padding-left:18px; font-size:13.5px; color:var(--muted); display:flex; flex-direction:column; gap:7px; }
+  .price-note{ margin-top:16px; font-size:13px; color:var(--muted); }
+
+  /* about */
+  .about{ display:grid; grid-template-columns: 220px 1fr; gap:32px; align-items:start; }
+  @media (max-width:640px){ .about{ grid-template-columns:1fr; } }
+  .avatar{ width:100%; aspect-ratio:1; border-radius:6px; background:var(--paper-2); border:1px dashed var(--line); display:flex; align-items:center; justify-content:center; color:var(--muted); font-family:'IBM Plex Mono',monospace; font-size:12px; text-align:center; padding:12px; }
+
+  .team-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:16px; }
+  @media (max-width:640px){ .team-grid{ grid-template-columns:1fr; } }
+  .team-card{ border:1px solid var(--line); border-radius:6px; padding:22px; background:var(--card); display:flex; gap:16px; align-items:flex-start; }
+  .team-card .avatar-sm{ width:60px; height:60px; border-radius:6px; background:var(--paper-2); border:1px dashed var(--line); flex:none; display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono',monospace; font-size:9px; color:var(--muted); text-align:center; line-height:1.3; }
+  .team-card h3{ font-size:16.5px; }
+  .team-card .role{ font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--accent); letter-spacing:.03em; margin-top:3px; text-transform:uppercase; }
+  .team-card p{ margin:10px 0 0; color:var(--muted); font-size:13.5px; }
+
+  /* faq */
+  details{ border-top:1px solid var(--line); padding:18px 0; }
+  details:last-child{ border-bottom:1px solid var(--line); }
+  summary{ cursor:pointer; font-family:'Fraunces',serif; font-weight:600; font-size:17px; list-style:none; display:flex; justify-content:space-between; gap:16px; align-items:center; }
+  summary::-webkit-details-marker{ display:none; }
+  summary::after{ content:"+"; font-family:'IBM Plex Mono',monospace; color:var(--accent); font-size:20px; flex:none; }
+  details[open] summary::after{ content:"–"; }
+  details p{ color:var(--muted); font-size:14.5px; margin:10px 0 0; max-width:64ch; }
+
+  /* contact / footer */
+  .contact-box{ border:1px solid var(--line); border-radius:6px; padding:34px; background:var(--card); text-align:left; }
+  .contact-box h2{ font-size:clamp(24px,3.4vw,32px); }
+  .contact-box .sub{ color:var(--muted); margin-top:10px; max-width:56ch; }
+  .contact-actions{ display:flex; flex-wrap:wrap; gap:12px; margin-top:22px; }
+  footer{ padding:34px 0 48px; padding-bottom:max(48px, env(safe-area-inset-bottom,0px)); }
+  .footrow{ display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; font-size:12.5px; color:var(--muted); font-family:'IBM Plex Mono',monospace; }
+
+  .ledger-bg{
+    background-image: repeating-linear-gradient(to bottom, transparent, transparent 27px, var(--line) 28px);
+    background-size: 100% 28px;
+    -webkit-mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
+            mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
+    opacity:.5;
+  }
+</style>
+
+<header class="top">
+  <div class="topbar wrap">
+    <div class="brand">Night<span>Ledger</span></div>
+    <nav class="navlinks">
+      <a href="#services">Services</a>
+      <a href="#industries">Industries</a>
+      <a href="#process">Process</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#about">About</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <a class="btn" href="https://calendly.com/sandeeppjain108/30min" target="_blank" rel="noopener">Book a call</a>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- HERO -->
+  <section class="hero" id="top">
+    <div>
+      <div class="eyebrow">Bookkeeping &amp; GST/PST filing for Canadian books</div>
+      <h1>Your books, balanced by the time you log in.</h1>
+      <p class="sub">Monthly bookkeeping, GST/PST filing, and Caseware year-end working papers for Canadian CPA firms and small businesses — done overnight in your time zone, by a team that has spent four years inside Canadian ledgers.</p>
+      <div class="ctas">
+        <a class="btn" href="https://calendly.com/sandeeppjain108/30min" target="_blank" rel="noopener">Book a 20-minute call</a>
+        <a class="btn ghost" href="#services">See services</a>
+      </div>
+    </div>
+
+    <div class="bridge">
+      <div class="bridge-head">Live — the overnight bridge</div>
+      <div class="clocks">
+        <div>
+          <div class="clock-loc">You — Manitoba (CT)</div>
+          <div class="clock-time mono" id="clock-ct">--:--:--</div>
+          <div class="clock-date" id="date-ct">—</div>
+        </div>
+        <div>
+          <div class="clock-loc">Working now — India (IST)</div>
+          <div class="clock-time mono" id="clock-ist">--:--:--</div>
+          <div class="clock-date" id="date-ist">—</div>
+        </div>
+      </div>
+      <div class="bridge-foot"><strong>~10.5 hours ahead.</strong> Reconciliations and filings move overnight, so a Manitoba morning starts with finished books instead of a to-do list.</div>
+    </div>
+  </section>
+
+  <hr class="rule" />
+
+  <!-- SERVICES -->
+  <section id="services">
+    <div class="row2">
+      <div>
+        <div class="eyebrow">01 — Services</div>
+        <h2>Four things, done properly</h2>
+        <p style="color:var(--muted); margin-top:14px; font-size:15px;">No bundled extras, no scope creep — each line is a discrete piece of work you can hire separately or together.</p>
+      </div>
+      <div class="ledger">
+        <div class="lrow">
+          <div class="num">01</div>
+          <div>
+            <h3>Monthly bookkeeping</h3>
+            <p>Bank &amp; credit card reconciliations, AP/AR, journal entries and clean chart-of-accounts maintenance in QuickBooks or Xero, closed out on a fixed monthly schedule.</p>
+          </div>
+          <div class="tag">QBO · QB Desktop · Xero</div>
+        </div>
+        <div class="lrow">
+          <div class="num">02</div>
+          <div>
+            <h3>GST / PST return filing</h3>
+            <p>Monthly and quarterly GST and PST return preparation and filing, reconciled back to the books before it's submitted — not estimated from a summary report.</p>
+          </div>
+          <div class="tag">Manitoba PST</div>
+        </div>
+        <div class="lrow">
+          <div class="num">03</div>
+          <div>
+            <h3>Year-end working papers</h3>
+            <p>Caseware files built to the standard your CPA firm expects — lead schedules, working papers and reconciliations ready for the engagement partner's review and sign-off.</p>
+          </div>
+          <div class="tag">Caseware</div>
+        </div>
+        <div class="lrow">
+          <div class="num">04</div>
+          <div>
+            <h3>Catch-up &amp; cleanup</h3>
+            <p>Multi-month backlogs brought current — mis-postings untangled, accounts reconciled, and the file handed back audit-ready.</p>
+          </div>
+          <div class="tag">Fixed scope</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="rule" />
+
+  <!-- INDUSTRIES -->
+  <section id="industries">
+    <div class="eyebrow">02 — Industries</div>
+    <h2 style="font-size:clamp(26px,3.6vw,34px); max-width:20ch;">Sectors this book has already been opened for</h2>
+    <div class="cards3" style="margin-top:28px;">
+      <div class="card">
+        <h3>Restaurant</h3>
+        <ul>
+          <li>Daily POS &amp; tip reconciliation</li>
+          <li>Supplier AP on tight terms</li>
+          <li>Multi-location roll-ups</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Transportation</h3>
+        <ul>
+          <li>Fuel &amp; mileage tracking</li>
+          <li>Owner-operator settlements</li>
+          <li>Cross-border trip cost allocation</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Automotive</h3>
+        <ul>
+          <li>Car dealership sales reconciliation</li>
+          <li>Parts &amp; inventory reconciliation</li>
+          <li>Service vs. parts revenue splits</li>
+          <li>Warranty claim tracking</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <hr class="rule" />
+
+  <!-- PROCESS / SECURITY -->
+  <section id="process">
+    <div class="row2">
+      <div>
+        <div class="eyebrow">03 — How it works</div>
+        <h2>Your data stays where it lives</h2>
+        <p style="color:var(--muted); margin-top:14px; font-size:15px;">The standing model for the last four years: access your own QuickBooks install directly, over a VPN you control. Nothing is exported, copied, or rebuilt in a separate system.</p>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <div class="n">1</div>
+          <div>
+            <h3>You grant VPN access to your own environment</h3>
+            <p>Work happens inside your existing QuickBooks Desktop, QBO or Xero install — the same one your team already uses. Access can be revoked at any time.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="n">2</div>
+          <div>
+            <h3>Books move overnight, your time</h3>
+            <p>Reconciliations, entries and filings are worked through the India night, so they're waiting, finished, at the start of your Manitoba day.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="n">3</div>
+          <div>
+            <h3>You review, or your CPA reviews</h3>
+            <p>For firms: working papers go back for the engagement partner's review and sign-off. Compilation and review reports are issued by your firm — that stays with your CPA.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="rule" />
+
+  <!-- TOOLS -->
+  <section>
+    <div class="eyebrow">04 — Software</div>
+    <h2 style="font-size:clamp(24px,3.2vw,30px);">Worked in daily, not learned for a demo</h2>
+    <div class="tools" style="margin-top:22px;">
+      <div class="tool"><span class="dot"></span>QuickBooks Desktop</div>
+      <div class="tool"><span class="dot"></span>QuickBooks Online</div>
+      <div class="tool"><span class="dot"></span>Xero</div>
+      <div class="tool"><span class="dot"></span>Caseware</div>
+      <div class="tool"><span class="dot pending"></span>QBO ProAdvisor — in progress</div>
+      <div class="tool"><span class="dot pending"></span>Xero Advisor — in progress</div>
+    </div>
+    <p class="toolnote">Certifications marked "in progress" are not yet held — flagged here rather than implied.</p>
+  </section>
+
+  <hr class="rule" />
+
+  <!-- PRICING -->
+  <section id="pricing">
+    <div class="eyebrow">05 — Pricing</div>
+    <h2 style="font-size:clamp(26px,3.6vw,34px);">Fixed monthly packages</h2>
+    <p style="color:var(--muted); margin-top:10px; font-size:15px; max-width:56ch;">Priced in CAD, scoped to transaction volume and account count on a short call — nothing is billed by the hour. Figures below are indicative starting points.</p>
+
+    <div class="cards-price" style="margin-top:28px;">
+      <div class="price-card">
+        <div class="plan">Starter</div>
+        <div class="amt">$299 <sub>/ mo CAD</sub></div>
+        <ul>
+          <li>Up to 2 bank/CC accounts</li>
+          <li>Monthly reconciliation &amp; close</li>
+          <li>One GST/PST return</li>
+        </ul>
+      </div>
+      <div class="price-card feat">
+        <div class="plan">Standard</div>
+        <div class="amt">$549 <sub>/ mo CAD</sub></div>
+        <ul>
+          <li>Multiple bank/CC accounts</li>
+          <li>Monthly reconciliation &amp; close</li>
+          <li>GST &amp; PST filing</li>
+          <li>Quarterly management summary</li>
+        </ul>
+      </div>
+      <div class="price-card">
+        <div class="plan">Firm / Year-end</div>
+        <div class="amt">From $450 <sub>/ file</sub></div>
+        <ul>
+          <li>Caseware working papers per file</li>
+          <li>Priced by revenue &amp; transaction volume</li>
+          <li>Volume rates for CPA firms sending 5+ files</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="price-card feat" style="margin-top:16px;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:20px; flex-wrap:wrap;">
+        <div>
+          <div class="plan">Dedicated capacity — for firms with several ongoing files</div>
+          <div class="amt" style="margin-top:6px;">$3,000 <sub>/ mo CAD — up to 120 hours</sub></div>
+        </div>
+        <div class="mono" style="font-size:12px; color:var(--muted); text-align:right;">~$25 CAD / hour effective</div>
+      </div>
+      <ul style="margin-top:6px;">
+        <li>Hours pooled and reallocated across all your files as priorities shift</li>
+        <li>One dedicated resource instead of per-file billing — useful once you're sending several clients' work each month</li>
+        <li>Unused hours don't carry over; additional hours billed at CAD $30/hour</li>
+      </ul>
+    </div>
+    <p class="price-note">Catch-up and cleanup work is quoted separately once the backlog is scoped. Figures above are starting points for early engagements — happy to revisit once real volumes are in hand.</p>
+  </section>
+
+  <hr class="rule" />
+
+  <!-- ABOUT -->
+  <section id="about">
+    <div class="eyebrow">06 — Team</div>
+    <h2 style="font-size:clamp(24px,3.2vw,30px); max-width:22ch;">Four of us, not a call center</h2>
+    <p style="color:var(--muted); margin-top:10px; font-size:15px; max-width:58ch;">Bookkeeping, GST/PST filing and year-end preparation split across a small named team — so an engagement never depends on one person being available.</p>
+
+    <div class="about" style="margin-top:30px;">
+      <div class="avatar">SJ</div>
+      <div>
+        <h3 style="font-family:'Fraunces',serif; font-weight:700; font-size:20px;">Sandeep Jain — Founder</h3>
+        <p style="color:var(--muted); margin-top:12px; font-size:15px; max-width:60ch;">Trained under India's Chartered Accountancy program. Four years working Canadian books — reconciliations, monthly GST and PST filing, and Caseware year-end files for clients of a Manitoba-based CPA firm, across restaurant, transportation and automotive accounts. Leads every engagement on the same VPN-based, in-your-system model.</p>
+        <a href="https://www.linkedin.com/in/sandeep-jain-169906438/" target="_blank" rel="noopener" style="display:inline-block; margin-top:10px; font-size:14px; color:var(--accent);">LinkedIn — Sandeep Jain →</a>
+      </div>
+    </div>
+
+    <div class="team-grid" style="margin-top:20px;">
+      <div class="team-card">
+        <div class="avatar-sm">SK</div>
+        <div>
+          <h3>Sunil Kumar M N</h3>
+          <div class="role">Partner</div>
+          <div class="tool" style="margin-top:10px; width:fit-content;"><span class="dot"></span>Chartered Accountant (India)</div>
+          <p>4 years' experience in Canadian bookkeeping, GST/PST filing and year-end preparation.</p>
+        </div>
+      </div>
+      <div class="team-card">
+        <div class="avatar-sm">SV</div>
+        <div>
+          <h3>Sudharani Vaidhya</h3>
+          <div class="role">Partner</div>
+          <div class="tool" style="margin-top:10px; width:fit-content;"><span class="dot"></span>Cost &amp; Management Accountant (India)</div>
+          <p>4 years' experience in Canadian bookkeeping, GST/PST filing and year-end preparation.</p>
+        </div>
+      </div>
+      <div class="team-card">
+        <div class="avatar-sm">KB</div>
+        <div>
+          <h3>Kowshik Bhat</h3>
+          <div class="role">Partner</div>
+          <div class="tool" style="margin-top:10px; width:fit-content;"><span class="dot"></span>Chartered Accountant (India)</div>
+          <p>4 years' experience in Canadian bookkeeping, GST/PST filing and year-end preparation.</p>
+        </div>
+      </div>
+      <div class="team-card" style="grid-column:1 / -1;">
+        <div class="avatar-sm">L</div>
+        <div>
+          <h3>Lohith</h3>
+          <div class="role">Associate</div>
+          <div class="tool" style="margin-top:10px; width:fit-content;"><span class="dot"></span>B.Com Graduate</div>
+          <p>2 years' experience in bookkeeping and reconciliations.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="rule" />
+
+  <!-- FAQ -->
+  <section id="faq">
+    <div class="eyebrow">07 — FAQ</div>
+    <h2 style="font-size:clamp(24px,3.2vw,30px);">Questions firms ask first</h2>
+    <div style="margin-top:22px;">
+      <details open>
+        <summary>Where does our data actually go?</summary>
+        <p>Nowhere. Work happens inside your own QuickBooks or Xero install over a VPN connection you control and can revoke at any time — nothing is exported to a separate system.</p>
+      </details>
+      <details>
+        <summary>Are you a CPA?</summary>
+        <p>No — we're not CPAs. This is bookkeeping and year-end file preparation — reconciliations, GST/PST filing, and Caseware working papers built to your CPA's review standard. Compilation and review reports are issued by your own CPA, not by us.</p>
+      </details>
+      <details>
+        <summary>What provinces do you handle for PST?</summary>
+        <p>Manitoba PST, from four years of direct filing experience. Other provincial sales taxes are taken on a case-by-case basis — ask before assuming coverage.</p>
+      </details>
+      <details>
+        <summary>How does onboarding start?</summary>
+        <p>A short call to scope account count, transaction volume and current backlog, followed by a fixed monthly quote and a VPN access setup on your side.</p>
+      </details>
+    </div>
+  </section>
+
+  <hr class="rule" />
+
+  <!-- CONTACT -->
+  <section id="contact">
+    <div class="contact-box">
+      <div class="eyebrow">08 — Get in touch</div>
+      <h2>Send over a trial balance, or just ask a question</h2>
+      <p class="sub">Fastest way in is a short call — account count, current software, and where the backlog stands, if there is one.</p>
+      <div class="contact-actions">
+        <a class="btn" href="mailto:you@example.com">Email — <span class="tbd" style="color:var(--accent-ink);">[you@example.com]</span></a>
+        <a class="btn ghost" href="https://calendly.com/sandeeppjain108/30min" target="_blank" rel="noopener">Book a call</a>
+        <a class="btn ghost" href="https://www.linkedin.com/in/sandeep-jain-169906438/" target="_blank" rel="noopener">Connect on LinkedIn</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap footrow">
+    <div>NIGHTLEDGER</div>
+    <div>Winnipeg, MB × India — GST/PST filing · Caseware year-end prep</div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  function fmt(tz){
+    try{
+      var now = new Date();
+      var time = new Intl.DateTimeFormat('en-CA', { timeZone: tz, hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false }).format(now);
+      var date = new Intl.DateTimeFormat('en-CA', { timeZone: tz, weekday:'short', month:'short', day:'numeric' }).format(now);
+      return { time: time, date: date };
+    }catch(e){ return { time:'--:--:--', date:'—' }; }
+  }
+  function tick(){
+    var ct = fmt('America/Winnipeg');
+    var ist = fmt('Asia/Kolkata');
+    var elT1 = document.getElementById('clock-ct');
+    var elD1 = document.getElementById('date-ct');
+    var elT2 = document.getElementById('clock-ist');
+    var elD2 = document.getElementById('date-ist');
+    if(elT1) elT1.textContent = ct.time;
+    if(elD1) elD1.textContent = ct.date;
+    if(elT2) elT2.textContent = ist.time;
+    if(elD2) elD2.textContent = ist.date;
+  }
+  tick();
+  setInterval(tick, 1000);
+})();
+</script>
